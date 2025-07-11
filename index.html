@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Подними флаг</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: url('mario_bg_fixed.png') no-repeat bottom center;
+      background-size: contain;
+      background-color: #87CEEB;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      position: relative;
+      overflow: hidden;
+      font-family: sans-serif;
+      cursor: pointer;
+    }
+
+    #clickCount {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 24px;
+      font-weight: bold;
+      z-index: 1000;
+    }
+
+    #pole {
+      width: 10px;
+      height: 400px;
+      background: linear-gradient(to bottom, #8B4513, #DEB887);
+      border-radius: 5px;
+      position: relative;
+      margin-bottom: 10vh;
+    }
+
+    #flag {
+      width: 0;
+      height: 0;
+      border-top: 30px solid transparent;
+      border-bottom: 30px solid transparent;
+      border-left: 50px solid red;
+      position: absolute;
+      bottom: 0;
+      left: 100%;
+      transition: bottom 0.1s;
+    }
+
+    #winMessage {
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 60px;
+      font-weight: bold;
+      color: yellow;
+      text-shadow: 2px 2px 4px black;
+      display: none;
+      z-index: 1001;
+    }
+  </style>
+</head>
+<body>
+  <div id="clickCount">Клики: 0</div>
+  <div id="winMessage">Победа!</div>
+  <div id="pole">
+    <div id="flag"></div>
+  </div>
+
+  <!-- звуки -->
+  <audio id="jumpSound" src="https://themushroomkingdom.net/sounds/wav/smb/smb_jump-small.wav"></audio>
+  <audio id="winSound" src="https://themushroomkingdom.net/sounds/wav/smb/smb_stage_clear.wav"></audio>
+
+  <!-- конфетти -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    const flag = document.getElementById('flag');
+    const pole = document.getElementById('pole');
+    const clickDisplay = document.getElementById('clickCount');
+    const winMessage = document.getElementById('winMessage');
+    const jumpSound = document.getElementById('jumpSound');
+    const winSound = document.getElementById('winSound');
+
+    let clickCount = 0;
+    const maxClicks = 52;
+    let victoryPlayed = false;
+    let forcedDrop40 = false;
+    let forcedDrop80 = false;
+
+    document.body.addEventListener('click', () => {
+      if (clickCount >= maxClicks) return;
+
+      clickCount++;
+      clickDisplay.textContent = 'Клики: ' + clickCount;
+
+      jumpSound.currentTime = 0;
+      jumpSound.play();
+
+      const poleHeight = pole.clientHeight;
+      const maxHeight = poleHeight * 0.90;
+
+      let progress = clickCount / maxClicks;
+
+      // откат после 40%
+      if (progress >= 0.40 && !forcedDrop40) {
+        progress = 0.30;
+        clickCount = Math.floor(maxClicks * progress);
+        forcedDrop40 = true;
+      }
+
+      // откат после 80%
+      if (progress >= 0.80 && !forcedDrop80) {
+        progress = 0.70;
+        clickCount = Math.floor(maxClicks * progress);
+        forcedDrop80 = true;
+      }
+
+      const newBottom = progress * maxHeight;
+      flag.style.bottom = newBottom + 'px';
+
+      if (clickCount >= maxClicks && !victoryPlayed) {
+        winMessage.style.display = 'block';
+        winSound.play();
+        victoryPlayed = true;
+
+        confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
+        confetti({ particleCount: 150, spread: 100, startVelocity: 60, origin: { y: 0.8 } });
+      }
+    });
+  </script>
+</body>
+</html>
