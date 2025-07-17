@@ -76,8 +76,8 @@
   </div>
 
   <!-- звуки -->
-  <audio id="jumpSound" src="https://themushroomkingdom.net/sounds/wav/smb/smb_jump-small.wav"></audio>
-  <audio id="winSound" src="https://themushroomkingdom.net/sounds/wav/smb/smb_stage_clear.wav"></audio>
+const clickSound = new Audio('https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg');
+const winSound = new Audio('https://actions.google.com/sounds/v1/crowd/crowd_cheer.ogg');
 
   <!-- конфетти -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -91,7 +91,7 @@
     const winSound = document.getElementById('winSound');
 
     let clickCount = 0;
-    const maxClicks = 52;
+    const maxClicks = 1000;
     let victoryPlayed = false;
     let forcedDrop40 = false;
     let forcedDrop80 = false;
