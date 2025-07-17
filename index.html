@@ -1,141 +1,133 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Подними флаг</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Флаг Mario</title>
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      height: 100vh;
-      background: url('mario_bg_fixed.png') no-repeat bottom center;
-      background-size: contain;
-      background-color: #87CEEB;
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      position: relative;
-      overflow: hidden;
-      font-family: sans-serif;
-      cursor: pointer;
     }
 
-    #clickCount {
+    body {
+      font-family: sans-serif;
+      background: #87CEEB;
+      overflow: hidden;
+    }
+
+    #click-count {
       position: absolute;
       top: 20px;
       left: 20px;
-      background-color: rgba(0, 0, 0, 0.7);
+      background: #2c3e50;
       color: white;
-      padding: 10px 20px;
-      border-radius: 12px;
       font-size: 24px;
-      font-weight: bold;
-      z-index: 1000;
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
+
+    #flag-container {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 90%;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
     }
 
     #pole {
-      width: 10px;
-      height: 400px;
+      width: 6px;
+      height: 100%;
       background: linear-gradient(to bottom, #8B4513, #DEB887);
-      border-radius: 5px;
-      position: relative;
-      margin-bottom: 10vh;
     }
 
     #flag {
-      width: 0;
-      height: 0;
-      border-top: 30px solid transparent;
-      border-bottom: 30px solid transparent;
-      border-left: 50px solid red;
-      position: absolute;
-      bottom: 0;
-      left: 100%;
-      transition: bottom 0.1s;
+      width: 30px;
+      height: 30px;
+      background: red;
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+      transition: bottom 0.3s;
+      position: relative;
     }
 
-    #winMessage {
+    #background {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
       position: absolute;
-      top: 50px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 60px;
-      font-weight: bold;
-      color: yellow;
-      text-shadow: 2px 2px 4px black;
-      display: none;
-      z-index: 1001;
+      z-index: -1;
     }
   </style>
 </head>
 <body>
-  <div id="clickCount">Клики: 0</div>
-  <div id="winMessage">Победа!</div>
-  <div id="pole">
+  <div id="click-count">Клики: 0</div>
+  <div id="flag-container">
     <div id="flag"></div>
+    <div id="pole"></div>
   </div>
-
-  <!-- звуки -->
-const clickSound = new Audio('https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg');
-const winSound = new Audio('https://actions.google.com/sounds/v1/crowd/crowd_cheer.ogg');
-
-  <!-- конфетти -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <img id="background" src="mario_bg_fixed.png" alt="background"/>
 
   <script>
-    const flag = document.getElementById('flag');
-    const pole = document.getElementById('pole');
-    const clickDisplay = document.getElementById('clickCount');
-    const winMessage = document.getElementById('winMessage');
-    const jumpSound = document.getElementById('jumpSound');
-    const winSound = document.getElementById('winSound');
-
-    let clickCount = 0;
+    let clicks = 0;
     const maxClicks = 1000;
-    let victoryPlayed = false;
-    let forcedDrop40 = false;
-    let forcedDrop80 = false;
+    const flag = document.getElementById('flag');
+    const clickCount = document.getElementById('click-count');
+
+    const clickSound = new Audio('https://www.soundjay.com/button/button-16.mp3');
+    const winSound = new Audio('https://www.soundjay.com/human/applause-8.mp3');
 
     document.body.addEventListener('click', () => {
-      if (clickCount >= maxClicks) return;
+      if (clicks >= maxClicks) return;
 
-      clickCount++;
-      clickDisplay.textContent = 'Клики: ' + clickCount;
+      clicks++;
+      clickCount.textContent = `Клики: ${clicks}`;
 
-      jumpSound.currentTime = 0;
-      jumpSound.play();
+      const percent = clicks / maxClicks;
+      const flagY = percent * 90; // Высота от нижнего края
 
-      const poleHeight = pole.clientHeight;
-      const maxHeight = poleHeight * 0.90;
+      flag.style.bottom = `${flagY}%`;
 
-      let progress = clickCount / maxClicks;
+      // Звук клика
+      clickSound.currentTime = 0;
+      clickSound.play();
 
-      // откат после 40%
-      if (progress >= 0.40 && !forcedDrop40) {
-        progress = 0.30;
-        clickCount = Math.floor(maxClicks * progress);
-        forcedDrop40 = true;
-      }
-
-      // откат после 80%
-      if (progress >= 0.80 && !forcedDrop80) {
-        progress = 0.70;
-        clickCount = Math.floor(maxClicks * progress);
-        forcedDrop80 = true;
-      }
-
-      const newBottom = progress * maxHeight;
-      flag.style.bottom = newBottom + 'px';
-
-      if (clickCount >= maxClicks && !victoryPlayed) {
-        winMessage.style.display = 'block';
+      // Победа
+      if (clicks === maxClicks) {
         winSound.play();
-        victoryPlayed = true;
-
-        confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
-        confetti({ particleCount: 150, spread: 100, startVelocity: 60, origin: { y: 0.8 } });
+        launchFireworks();
       }
     });
+
+    function launchFireworks() {
+      const duration = 3000;
+      const end = Date.now() + duration;
+
+      (function frame() {
+        confetti({
+          particleCount: 5,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 }
+        });
+        confetti({
+          particleCount: 5,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 }
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      })();
+    }
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </body>
 </html>
