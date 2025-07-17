@@ -11,52 +11,56 @@
       padding: 0;
     }
 
-    body {
+    html, body {
+      height: 100%;
+      width: 100%;
       font-family: sans-serif;
       overflow: hidden;
-      background-color: #87CEEB;
-      position: relative;
+      background: #87CEEB;
     }
 
-    #background {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
-      z-index: -1;
+    body {
+      background-image: url('mario_bg_fixed.png');
+      background-repeat: no-repeat;
+      background-position: center bottom;
+      background-size: contain;
     }
 
     #click-count {
-      position: fixed;
+      position: absolute;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(44, 62, 80, 0.8);
+      background: #2c3e50;
       color: white;
       font-size: 24px;
       padding: 10px 20px;
-      border-radius: 12px;
+      border-radius: 10px;
       z-index: 10;
     }
 
     #flag-container {
       position: absolute;
-      bottom: 0;
+      bottom: 9%; /* было 14%, добавили 5% к высоте снизу */
       left: 50%;
       transform: translateX(-50%);
-      height: 90%;
-      width: 40px;
+      height: 70%; /* было 56%, увеличено на 5% снизу и 10% сверху */
       display: flex;
       flex-direction: column-reverse;
-      align-items: center;
+      align-items: flex-start;
+      z-index: 2;
     }
 
     #pole {
-      width: 6px;
+      width: 18px;
       height: 100%;
-      background: linear-gradient(to bottom, #8B4513, #DEB887);
+      background: repeating-linear-gradient(
+        to bottom,
+        #8B4513 0px,
+        #8B4513 4px,
+        #A0522D 4px,
+        #A0522D 8px
+      );
     }
 
     #flag {
@@ -64,14 +68,14 @@
       height: 60px;
       background: red;
       clip-path: polygon(0 0, 100% 50%, 0 100%);
+      transition: bottom 0.3s ease-out;
       position: absolute;
-      bottom: 0%;
-      transition: bottom 0.2s ease-out;
+      left: 18px;
+      bottom: 0; /* прижат к нижней точке флагштока */
     }
   </style>
 </head>
 <body>
-  <img id="background" src="mario_bg_fixed.png" alt="Фон" />
   <div id="click-count">Клики: 0</div>
 
   <div id="flag-container">
@@ -86,9 +90,10 @@
 
     const flag = document.getElementById('flag');
     const clickCount = document.getElementById('click-count');
+    const clickSound = new Audio('click.mp3');
+    const winSound = new Audio('win.mp3');
 
-    const clickSound = new Audio('https://www.fesliyanstudios.com/play-mp3/387');
-    const winSound = new Audio('https://www.fesliyanstudios.com/play-mp3/6679');
+    const pole = document.getElementById('pole');
 
     document.body.addEventListener('click', () => {
       if (clicks >= maxClicks) return;
@@ -97,15 +102,16 @@
       clickCount.textContent = `Клики: ${clicks}`;
 
       const percent = clicks / maxClicks;
-      const flagY = percent * 85; // Чтобы не уходил за верх
+      const poleHeight = pole.offsetHeight;
+      const flagHeight = flag.offsetHeight;
+      const availableHeight = poleHeight - flagHeight;
 
-      flag.style.bottom = `${flagY}%`;
+      const newBottom = percent * availableHeight;
+      flag.style.bottom = `${newBottom}px`;
 
-      // Звук клика
       clickSound.currentTime = 0;
       clickSound.play();
 
-      // Победа
       if (clicks === maxClicks) {
         winSound.play();
         launchFireworks();
@@ -113,18 +119,18 @@
     });
 
     function launchFireworks() {
-      const duration = 4000;
+      const duration = 3000;
       const end = Date.now() + duration;
 
       (function frame() {
         confetti({
-          particleCount: 7,
+          particleCount: 6,
           angle: 60,
           spread: 55,
           origin: { x: 0 }
         });
         confetti({
-          particleCount: 7,
+          particleCount: 6,
           angle: 120,
           spread: 55,
           origin: { x: 1 }
